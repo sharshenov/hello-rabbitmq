@@ -1,0 +1,3 @@
+/12_rails/log/*
+!/12_rails/log/.keep
+/12_rails/tmp
