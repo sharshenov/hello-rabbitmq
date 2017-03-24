@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bunny'
+
+connection = Bunny.new
+connection.start
+
+channel = connection.create_channel
+exchange = channel.default_exchange
+
+routing_key = '07.will_fail'
+
+puts 'Type your messages'
+
+begin
+  loop do
+    message = readline.chomp
+
+    exchange.publish(message, routing_key: routing_key)
+  end
+rescue Interrupt => _
+  channel.close
+  connection.close
+end

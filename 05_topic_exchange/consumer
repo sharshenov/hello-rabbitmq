@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bunny'
+
+connection = Bunny.new
+connection.start
+
+channel = connection.create_channel
+exchange = channel.topic('hello.05_topic')
+
+queue1 = channel.queue('05.queue1')
+queue2 = channel.queue('05.queue2')
+queue3 = channel.queue('05.queue3')
+
+queue1.bind(exchange.name, routing_key: 'foo.bar')
+queue2.bind(exchange.name, routing_key: 'foo.*')
+queue3.bind(exchange.name, routing_key: '*.baz')
+
+begin
+  queue1.subscribe(block: false) do |delivery_info, _properties, msg|
+    puts "Queue1 (routing_key '#{delivery_info[:routing_key]}'): #{msg}"
+  end
+
+  queue2.subscribe(block: false) do |delivery_info, _properties, msg|
+    puts "Queue2 (routing_key '#{delivery_info[:routing_key]}'): #{msg}"
+  end
+
+  queue3.subscribe(block: true) do |delivery_info, _properties, msg|
+    puts "Queue3 (routing_key '#{delivery_info[:routing_key]}'): #{msg}"
+  end
+rescue Interrupt => _
+  channel.close
+  connection.close
+end

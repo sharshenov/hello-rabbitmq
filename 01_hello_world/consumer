@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bunny'
+
+connection = Bunny.new
+connection.start
+
+channel = connection.create_channel
+queue   = channel.queue('01.hello_world')
+
+begin
+  queue.subscribe(block: true) do |_delivery_info, _properties, msg|
+    puts msg
+  end
+rescue Interrupt => _
+  channel.close
+  connection.close
+end

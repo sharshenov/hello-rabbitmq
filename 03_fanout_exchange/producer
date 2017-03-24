@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bunny'
+
+connection = Bunny.new
+connection.start
+
+channel = connection.create_channel
+exchange = channel.fanout('hello.03_fanout')
+
+puts 'Type your messages'
+
+begin
+  loop do
+    message = readline.chomp
+
+    exchange.publish(message)
+  end
+rescue Interrupt => _
+  channel.close
+  connection.close
+end

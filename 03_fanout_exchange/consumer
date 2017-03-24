@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bunny'
+
+connection = Bunny.new
+connection.start
+
+channel = connection.create_channel
+exchange = channel.fanout('hello.03_fanout')
+
+queue1 = channel.queue('03.queue1')
+queue2 = channel.queue('03.queue2')
+
+queue1.bind(exchange.name)
+queue2.bind(exchange.name)
+
+begin
+  queue1.subscribe(block: false) do |_delivery_info, _properties, msg|
+    puts "Queue1: #{msg}"
+  end
+
+  queue2.subscribe(block: true) do |_delivery_info, _properties, msg|
+    puts "Queue2: #{msg}"
+  end
+rescue Interrupt => _
+  channel.close
+  connection.close
+end

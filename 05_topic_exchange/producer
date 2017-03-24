@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bunny'
+
+connection = Bunny.new
+connection.start
+
+channel = connection.create_channel
+exchange = channel.topic('hello.05_topic')
+
+routing_keys = %w(foo.bar foo.baz)
+
+puts 'Type your messages'
+
+begin
+  loop do
+    message = readline.chomp
+    routing_key = routing_keys.sample
+
+    exchange.publish(message, routing_key: routing_key)
+  end
+rescue Interrupt => _
+  channel.close
+  connection.close
+end

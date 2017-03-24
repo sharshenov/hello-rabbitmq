@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bunny'
+
+connection = Bunny.new
+connection.start
+
+channel = connection.create_channel
+
+dlx_exchange  = channel.topic('hello.07_dlx')
+dead_queue    = channel.queue('07.dead_queue')
+dead_queue.bind(dlx_exchange.name, routing_key: '07.*')
+
+queue = channel.queue('07.will_fail', arguments: {
+                        'x-dead-letter-exchange' => dlx_exchange.name
+                      })
+
+begin
+  queue.subscribe(block: true, manual_ack: true) do |delivery_info, _, msg|
+    puts "Rejecting '#{msg}'"
+
+    channel.nack(delivery_info.delivery_tag)
+  end
+rescue Interrupt => _
+  channel.close
+  connection.close
+end
