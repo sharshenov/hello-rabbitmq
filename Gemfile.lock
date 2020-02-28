@@ -19,8 +19,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bunny (~> 2.6.4)
-  sneakers (~> 2.4.0)
+  sneakers
 
 BUNDLED WITH
-   1.14.6
+   1.17.3
